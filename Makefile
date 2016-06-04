@@ -1,5 +1,5 @@
 test:
-	go test ./...
+	go test $(go list ./... | grep -v /vendor/)
 
 build:
 	@GOARCH="amd64" GOOS="linux" go build -o ./build/linux/go-shortener
