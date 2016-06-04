@@ -1,10 +1,12 @@
 package handler
 
 import (
+	"bytes"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
+	"log"
+	"strings"
 	"gopkg.in/redis.v3"
 )
 
@@ -17,7 +19,8 @@ func getRedisClient() *redis.Client {
 }
 
 func TestWhenURLExists(t *testing.T) {
-
+	var buffer bytes.Buffer
+	logger := log.New(&buffer, "", 0)
 	client := getRedisClient()
 
 	client.Del("go-shortener-count:/location-test")
@@ -32,7 +35,7 @@ func TestWhenURLExists(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	handler := &RedirectHandler{client: client}
+	handler := &RedirectHandler{client: client, logger: logger}
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
@@ -56,13 +59,17 @@ func TestWhenURLExists(t *testing.T) {
 		t.Errorf("Received wrong location: %s\n", resp.Header.Get("Location"))
 	}
 
+	if !strings.HasSuffix(buffer.String(), "301 /location-test http://location.test\n") {
+		t.Fatalf("Incorrect log entry: %s\n", buffer.String())
+	}
 }
 
 func TestWhenURLDoesntExist(t *testing.T) {
-
+	var buffer bytes.Buffer
+	logger := log.New(&buffer, "", 0)
 	client := getRedisClient()
 
-	handler := &RedirectHandler{client: client}
+	handler := &RedirectHandler{client: client, logger: logger}
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
@@ -76,6 +83,10 @@ func TestWhenURLDoesntExist(t *testing.T) {
 
 	if resp.StatusCode != 404 {
 		t.Errorf("Received non-404 response: %d\n", resp.StatusCode)
+	}
+
+	if !strings.HasSuffix(buffer.String(), "404 /should-not-exist\n") {
+		t.Fatalf("Incorrect log entry: %s\n", buffer.String())
 	}
 
 }
