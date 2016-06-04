@@ -11,11 +11,18 @@ func TestMyHandler(t *testing.T) {
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	resp, err := http.Get(server.URL + "test")
+	req, err := http.NewRequest("GET", server.URL+"/test", nil)
+	transport := http.Transport{}
+	resp, err := transport.RoundTrip(req)
+
 	if err != nil {
 		t.Fatal(err)
 	}
-	if resp.StatusCode != 200 {
-		t.Fatalf("Received non-200 response: %d\n", resp.StatusCode)
+	if resp.StatusCode != 301 {
+		t.Fatalf("Received non-301 response: %d\n", resp.StatusCode)
 	}
+	if resp.Header.Get("Location") != "http://location.test" {
+		t.Errorf("Received wrong location: %s\n", resp.Header.Get("Location"))
+	}
+
 }

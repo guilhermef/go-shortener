@@ -1,10 +1,10 @@
 package main
 
 import (
+	"github.com/guilhermef/go-shortener/handler"
+	"gopkg.in/redis.v3"
 	"log"
 	"net/http"
-
-	"github.com/guilhermef/go-shortener/handler"
 )
 
 const addr = "localhost:12345"
