@@ -2,18 +2,23 @@ package handler
 
 import (
 	"net/http"
-	"gopkg.in/redis.v3"
 	"net/http/httptest"
 	"testing"
+
+	"gopkg.in/redis.v3"
 )
 
-func TestMyHandler(t *testing.T) {
-
-	client := redis.NewClient(&redis.Options{
+func getRedisClient() *redis.Client {
+	return redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
 		Password: "", // no password set
 		DB:       0,  // use default DB
 	})
+}
+
+func TestWhenURLExists(t *testing.T) {
+
+	client := getRedisClient()
 
 	client.Del("go-shortener-count:/location-test")
 
@@ -49,6 +54,28 @@ func TestMyHandler(t *testing.T) {
 	}
 	if resp.Header.Get("Location") != "http://location.test" {
 		t.Errorf("Received wrong location: %s\n", resp.Header.Get("Location"))
+	}
+
+}
+
+func TestWhenURLDoesntExist(t *testing.T) {
+
+	client := getRedisClient()
+
+	handler := &RedirectHandler{client: client}
+	server := httptest.NewServer(handler)
+	defer server.Close()
+
+	req, err := http.NewRequest("GET", server.URL+"/should-not-exist", nil)
+	transport := http.Transport{}
+	resp, err := transport.RoundTrip(req)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if resp.StatusCode != 404 {
+		t.Errorf("Received non-404 response: %d\n", resp.StatusCode)
 	}
 
 }
