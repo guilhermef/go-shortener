@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/guilhermef/go-shortener/handler"
-	"gopkg.in/redis.v3"
+	//"gopkg.in/redis.v3"
 	"log"
 	"net/http"
 )

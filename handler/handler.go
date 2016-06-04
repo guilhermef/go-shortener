@@ -1,13 +1,15 @@
 package handler
 
-import {
-    "gopkg.in/redis.v3"
-    "net/http"
-}
+import (
+	"net/http"
+  "gopkg.in/redis.v3"
+)
 
 type RedirectHandler struct {
+	client *redis.Client
 }
 
 func (h *RedirectHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	http.Redirect(w, req, "http://location.test", 301)
+  redirect, _ := h.client.Get("go-shortner:" + req.RequestURI).Result()
+  http.Redirect(w, req, redirect, 301)
 }
