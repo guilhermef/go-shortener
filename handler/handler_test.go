@@ -15,8 +15,10 @@ func TestMyHandler(t *testing.T) {
 		DB:       0,  // use default DB
 	})
 
+	client.Del("go-shortener-count:/location-test")
+
 	err := client.Set(
-		"go-shortner:/location-test",
+		"go-shortener:/location-test",
 		"http://location.test",
 		0,
 	).Err()
@@ -32,6 +34,12 @@ func TestMyHandler(t *testing.T) {
 	req, err := http.NewRequest("GET", server.URL+"/location-test", nil)
 	transport := http.Transport{}
 	resp, err := transport.RoundTrip(req)
+
+	count, _ := client.Get("go-shortener-count:/location-test").Result()
+
+	if count != "1" {
+		t.Fatal("Unexpected count")
+	}
 
 	if err != nil {
 		t.Fatal(err)
