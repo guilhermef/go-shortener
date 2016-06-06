@@ -9,7 +9,6 @@ import (
 )
 
 type config struct {
-	redisPort int
 	logPath   string
 	redisHost string
 }
@@ -25,7 +24,8 @@ func getEnvOrDefault(key, defaultValue string) string {
 }
 
 func setConfig(config *config) {
-	config.redisHost = getEnvOrDefault("REDIS_HOST", "localhost")
+	config.redisHost = getEnvOrDefault("REDIS_HOST", "localhost:6379")
+	config.logPath = getEnvOrDefault("LOG_PATH", "")
 }
 
 func main() {
