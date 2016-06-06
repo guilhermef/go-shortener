@@ -5,11 +5,36 @@ import (
 	//"gopkg.in/redis.v3"
 	"log"
 	"net/http"
+	"os"
 )
+
+type config struct {
+	redisPort int
+	logPath   string
+	redisHost string
+}
 
 const addr = "localhost:12345"
 
+func getEnvOrDefault(key, defaultValue string) string {
+	value := os.Getenv(key)
+	if value != "" {
+		return value
+	}
+	return defaultValue
+}
+
+func setConfig(config *config) {
+	config.redisHost = getEnvOrDefault("REDIS_HOST", "localhost")
+}
+
 func main() {
+	cfg := &config{}
+	setConfig(cfg)
+	initialize(cfg)
+}
+
+func initialize(cfg *config) {
 	err := http.ListenAndServe(addr, &handler.RedirectHandler{})
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
