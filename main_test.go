@@ -12,6 +12,10 @@ func TestWithoutFlags(t *testing.T) {
 	}
 
 	if cfg.logPath != "" {
-		t.Fatalf("Unexpected logPath %s", cfg.logPath)
+		t.Fatalf("Unexpected logPath: %s", cfg.logPath)
+	}
+
+	if cfg.port != "1234" {
+		t.Fatalf("Unexpected port: %s", cfg.port)
 	}
 }

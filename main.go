@@ -11,6 +11,7 @@ import (
 type config struct {
 	logPath   string
 	redisHost string
+	port      string
 }
 
 const addr = "localhost:12345"
@@ -25,6 +26,7 @@ func getEnvOrDefault(key, defaultValue string) string {
 
 func setConfig(config *config) {
 	config.redisHost = getEnvOrDefault("REDIS_HOST", "localhost:6379")
+	config.port = getEnvOrDefault("PORT", "1234")
 	config.logPath = getEnvOrDefault("LOG_PATH", "")
 }
 
