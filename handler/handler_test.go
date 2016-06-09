@@ -35,7 +35,7 @@ func TestWhenURLExists(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	handler := &RedirectHandler{client: client, logger: logger}
+	handler := &RedirectHandler{Client: client, Logger: logger}
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
@@ -69,7 +69,7 @@ func TestWhenURLDoesntExist(t *testing.T) {
 	logger := log.New(&buffer, "", 0)
 	client := getRedisClient()
 
-	handler := &RedirectHandler{client: client, logger: logger}
+	handler := &RedirectHandler{Client: client, Logger: logger}
 	server := httptest.NewServer(handler)
 	defer server.Close()
 

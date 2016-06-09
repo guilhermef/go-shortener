@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/guilhermef/go-shortener/handler"
-	//"gopkg.in/redis.v3"
+	"gopkg.in/redis.v3"
 	"log"
 	"net/http"
 	"os"
@@ -30,6 +30,23 @@ func setConfig(config *config) {
 	config.logPath = getEnvOrDefault("LOG_PATH", "")
 }
 
+func getLogger(cfg *config) *log.Logger {
+	if cfg.logPath == "" {
+		return log.New(os.Stdout, "", 0)
+	}
+
+	file, _ := os.Create(cfg.logPath)
+	return log.New(file, "", 0)
+}
+
+func getRedisClient(cfg *config) *redis.Client {
+	return redis.NewClient(&redis.Options{
+		Addr:     cfg.redisHost,
+		Password: "", // no password set
+		DB:       0,  // use default DB
+	})
+}
+
 func main() {
 	cfg := &config{}
 	setConfig(cfg)
@@ -37,7 +54,10 @@ func main() {
 }
 
 func initialize(cfg *config) {
-	err := http.ListenAndServe(addr, &handler.RedirectHandler{})
+	logger := getLogger(cfg)
+	redisClient := getRedisClient(cfg)
+
+	err := http.ListenAndServe("localhost:"+cfg.port, &handler.RedirectHandler{Client: redisClient, Logger: logger})
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
