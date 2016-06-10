@@ -2,12 +2,12 @@ package handler
 
 import (
 	"bytes"
+	"gopkg.in/redis.v3"
+	"log"
 	"net/http"
 	"net/http/httptest"
-	"testing"
-	"log"
 	"strings"
-	"gopkg.in/redis.v3"
+	"testing"
 )
 
 func getRedisClient() *redis.Client {
