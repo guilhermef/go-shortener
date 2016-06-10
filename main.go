@@ -12,7 +12,10 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	err := http.ListenAndServe("localhost:"+cfg.Port, &handler.RedirectHandler{Client: cfg.RedisClient, Logger: cfg.Logger})
+
+	address := "0.0.0.0:"+cfg.Port
+	log.Printf("Running on %s", address)
+	err = http.ListenAndServe(address, &handler.RedirectHandler{Client: cfg.RedisClient, Logger: cfg.Logger})
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}

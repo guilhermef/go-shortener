@@ -28,6 +28,30 @@ func TestDefaultValues(t *testing.T) {
 	}
 }
 
+func TestEnvVariables(t *testing.T) {
+  os.Setenv("REDIS_HOST", "test-redisHost")
+  os.Setenv("PORT", "test-port")
+  os.Setenv("LOG_PATH", "test-logPath")
+
+  settings := &readSettings{LogPath: "wrong-logPath", Port: "wrong-port", RedisHost: "wrong-redisHost"}
+  defer os.Remove("./wrong-logPath")
+
+  options := getRedisOptions(settings)
+  if options.Addr != "test-redisHost" {
+    t.Fatalf("REDIS_HOST default value incorrect. Expected test-redisHost; got %s", options.Addr)
+  }
+
+  out := getLoggerOutput(settings)
+  if out == os.Stdout {
+    t.Fatal("Logger output should not be STDOUT")
+  }
+
+  cfg, _ := NewConfig()
+  if cfg.Port != "test-port" {
+    t.Fatalf("Unexpected port: %s", cfg.Port)
+  }
+}
+
 func TestFetchFromValidYAML(t *testing.T) {
 	settings := &readSettings{LogPath: "test-logPath", Port: "test-port", RedisHost: "test-redisHost"}
 	b, _ := yaml.Marshal(settings)

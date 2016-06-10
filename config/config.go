@@ -22,7 +22,10 @@ type Config struct {
 	RedisClient *redis.Client
 }
 
-func try(value string, def string) string {
+func try(env string, value string, def string) string {
+	if env != "" {
+		return env
+	}
 	if value != "" {
 		return value
 	}
@@ -32,14 +35,15 @@ func try(value string, def string) string {
 
 func getRedisOptions(settings *readSettings) *redis.Options {
 	return &redis.Options{
-		Addr:     try(settings.RedisHost, "localhost:6379"),
+		Addr:     try(os.Getenv("REDIS_HOST"), settings.RedisHost, "localhost:6379"),
 		Password: "", // no password set
 		DB:       0,  // use default DB
 	}
 }
 
 func getLoggerOutput(settings *readSettings) io.Writer {
-	if settings.LogPath == "" {
+	logPath := try(os.Getenv("LOG_PATH"), settings.LogPath, "")
+	if logPath == "" {
 		return os.Stdout
 	}
 
@@ -48,7 +52,7 @@ func getLoggerOutput(settings *readSettings) io.Writer {
 }
 
 func fetchSettings() (*readSettings, error) {
-	s := readSettings{LogPath: "", Port: "1234", RedisHost: "localhost:6379"}
+	s := readSettings{LogPath: "", Port: "", RedisHost: ""}
 	data, readErr := ioutil.ReadFile("./settings.yml")
 	if readErr != nil {
 		return &s, nil
@@ -72,6 +76,6 @@ func NewConfig() (*Config, error) {
 
 	return &Config{
 		Logger:      logger,
-		Port:        try(s.Port, "1234"),
+		Port:        try(os.Getenv("PORT"), s.Port, "1234"),
 		RedisClient: redisClient}, err
 }

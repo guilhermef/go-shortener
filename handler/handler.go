@@ -15,8 +15,8 @@ type RedirectHandler struct {
 func (h *RedirectHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	logEntry := time.Now().UTC().String()
 
-	redirect, _ := h.Client.Get("go-shortener:" + req.RequestURI).Result()
-	if redirect == "" {
+	redirect, err := h.Client.Get("go-shortener:" + req.RequestURI).Result()
+	if redirect == "" || err != nil {
 		logEntry += " 404 " + req.RequestURI
 		http.NotFound(w, req)
 	} else {

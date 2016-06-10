@@ -2,7 +2,13 @@
 A simple redis based url shortener
 
 ## Settings
-Settings are read from a _settings.yml_ file, which should follow the structure below
+Settings are read, in the following order, from:
+
+* Environment variables `LOG_PATH`, `REDIS_HOST`, and `PORT`;
+* a _settings.yml_ file
+* default values
+
+The _settings.yml_ file should follow the structure below
 
 ```YAML
 logpath: path_to_log_file
