@@ -5,5 +5,8 @@ go:
   - 1.6
   - tip
 
+install:
+  - godep restore
+
 services:
   - redis-server
