@@ -17,6 +17,11 @@ func (h *RedirectHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	logEntry := time.Now().UTC().String()
 
 	if req.RequestURI == "/healthcheck" {
+		err := h.Client.Ping().Err()
+		if err != nil {
+			http.Error(w, "Could not connect to REDIS server", 502)
+			return
+		}
 		logEntry += " 200 " + req.RequestURI
 		h.Logger.Print(logEntry)
 		io.WriteString(w, "WORKING\n")
