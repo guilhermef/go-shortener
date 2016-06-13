@@ -8,12 +8,15 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strconv"
 )
 
 type readSettings struct {
 	LogPath   string
 	Port      string
 	RedisHost string
+	RedisPass string
+	RedisDB   int64
 }
 
 type Config struct {
@@ -33,12 +36,23 @@ func try(env string, value string, def string) string {
 	return def
 }
 
+func tryInt(env string, def int64) int64 {
+	if env != "" {
+		envInt, err := strconv.ParseInt(env, 10, 64)
+		if err != nil {
+			panic("Could not parse passed REDIS_DB environment variable")
+		}
+		return envInt
+	}
+
+	return def
+}
+
 func getRedisOptions(settings *readSettings) *redis.Options {
 	return &redis.Options{
-		Addr:     try(os.Getenv("REDIS_HOST"), settings.RedisHost, "localhost:6379"),
-		Password: "", // no password set
-		DB:       0,  // use default DB
-	}
+		Addr:     try(os.Getenv("REDIS_HOST"), settings.RedisHost, "127.0.0.1:6379"),
+		Password: try(os.Getenv("REDIS_PASS"), settings.RedisPass, ""),
+		DB:       tryInt(os.Getenv("REDIS_DB"), settings.RedisDB)}
 }
 
 func getLoggerOutput(settings *readSettings) io.Writer {

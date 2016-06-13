@@ -13,7 +13,7 @@ func main() {
 		panic(err)
 	}
 
-	address := "0.0.0.0:"+cfg.Port
+	address := "0.0.0.0:" + cfg.Port
 	log.Printf("Running on %s", address)
 	err = http.ListenAndServe(address, &handler.RedirectHandler{Client: cfg.RedisClient, Logger: cfg.Logger})
 	if err != nil {
