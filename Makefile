@@ -1,3 +1,5 @@
+.PHONY: build
+
 test:
 	@go test `go list ./... | grep -v /vendor/`
 
