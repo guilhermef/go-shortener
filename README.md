@@ -10,10 +10,21 @@ go get github.com/guilhermef/go-shortener
 
 then run `godep restore` to fetch necessary dependencies.
 
-
 ## Usage
 
 Run with `make run`. Set parameters with environment variables or a __settings.yml__, as described in the next section.
+
+__go-shortener__ reads the origin and target URIs from a REDIS server. REDIS keys correspond to origin URLs with a `go-shortener:` prefix and the values will be the target URIs. So, for instance, a redirect from _/origin_ to _/target_ will require the following entry in REDIS:
+```
+go-shortener:/origin  ->  /target
+```
+
+This can be set in REDIS via the command `SET go-shortener:/origin /target`.
+
+A counter is incremented whenever its corresponding key is hit. Counter key names have the `go-shortener-count:` prefix so, considering the previous example, if __15__ requests are made to `/origin`, REDIS will have the following entry:
+```
+go-shortener-count:/origin  ->  15
+```
 
 ## Settings
 Following are the necessary settings and their default values:
