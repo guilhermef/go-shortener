@@ -3,6 +3,7 @@ package handler
 import (
 	"bytes"
 	"gopkg.in/redis.v3"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -42,6 +43,7 @@ func TestWhenURLExists(t *testing.T) {
 	req, err := http.NewRequest("GET", server.URL+"/location-test", nil)
 	transport := http.Transport{}
 	resp, err := transport.RoundTrip(req)
+	defer resp.Body.Close()
 
 	count, _ := client.Get("go-shortener-count:/location-test").Result()
 
@@ -76,6 +78,7 @@ func TestWhenURLDoesntExist(t *testing.T) {
 	req, err := http.NewRequest("GET", server.URL+"/should-not-exist", nil)
 	transport := http.Transport{}
 	resp, err := transport.RoundTrip(req)
+	defer resp.Body.Close()
 
 	if err != nil {
 		t.Fatal(err)
@@ -89,4 +92,35 @@ func TestWhenURLDoesntExist(t *testing.T) {
 		t.Fatalf("Incorrect log entry: %s\n", buffer.String())
 	}
 
+}
+
+func TestHealthCheck(t *testing.T) {
+	var buffer bytes.Buffer
+	logger := log.New(&buffer, "", 0)
+	client := getRedisClient()
+
+	handler := &RedirectHandler{Client: client, Logger: logger}
+	server := httptest.NewServer(handler)
+	defer server.Close()
+
+	req, err := http.NewRequest("GET", server.URL+"/healthcheck", nil)
+	transport := http.Transport{}
+	resp, err := transport.RoundTrip(req)
+	defer resp.Body.Close()
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if resp.StatusCode != 200 {
+		t.Errorf("Received non-200 response: %d\n", resp.StatusCode)
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if string(body) != "WORKING\n" {
+		t.Errorf("Incorrect response body: %s\n", string(body))
+	}
+	if !strings.HasSuffix(buffer.String(), "200 /healthcheck\n") {
+		t.Fatalf("Incorrect log entry: %s\n", buffer.String())
+	}
 }

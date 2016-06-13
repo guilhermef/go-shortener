@@ -2,6 +2,7 @@ package handler
 
 import (
 	"gopkg.in/redis.v3"
+	"io"
 	"log"
 	"net/http"
 	"time"
@@ -14,6 +15,13 @@ type RedirectHandler struct {
 
 func (h *RedirectHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	logEntry := time.Now().UTC().String()
+
+	if req.RequestURI == "/healthcheck" {
+		logEntry += " 200 " + req.RequestURI
+		h.Logger.Print(logEntry)
+		io.WriteString(w, "WORKING\n")
+		return
+	}
 
 	redirect, err := h.Client.Get("go-shortener:" + req.RequestURI).Result()
 	if redirect == "" || err != nil {
