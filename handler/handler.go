@@ -30,8 +30,8 @@ func (h *RedirectHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 	redirect, err := h.Client.Get("go-shortener:" + req.RequestURI).Result()
 	if redirect == "" || err != nil {
-		logEntry += " 301 " + req.RequestURI + " http://www.eduk.com.br"
-		http.Redirect(w, req, "http://www.eduk.com.br", 301)
+		logEntry += " 404 " + req.RequestURI
+		http.NotFound(w, req)
 	} else {
 		logEntry += " 301 " + req.RequestURI + " " + redirect
 		h.Client.Incr("go-shortener-count:" + req.RequestURI)

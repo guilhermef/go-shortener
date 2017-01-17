@@ -1,5 +1,5 @@
 {
-	"ImportPath": "github.com/edukorg/go-shortener",
+	"ImportPath": "github.com/guilhermef/go-shortener",
 	"GoVersion": "go1.6",
 	"GodepVersion": "v74",
 	"Deps": [
