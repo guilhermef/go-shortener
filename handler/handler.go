@@ -6,11 +6,36 @@ import (
 	"log"
 	"net/http"
 	"time"
+	"strconv"
+	"os"
 )
 
 type RedirectHandler struct {
 	Client *redis.Client
 	Logger *log.Logger
+	Extra  Extra
+}
+
+type Extra struct {
+  RedirectHost string
+  RedirectCode int
+}
+
+func getExtra(h *Extra) Extra{
+	redirectCode := 302
+
+	if os.Getenv("REDIRECT_CODE") != "" {
+		redirectCode, _ = strconv.Atoi(os.Getenv("REDIRECT_CODE"))
+	} else if(h.RedirectCode != 0) {
+		redirectCode = h.RedirectCode
+	}
+
+	redirectHost := os.Getenv("REDIRECT_HOST")
+	if redirectHost == "" {
+		redirectHost = h.RedirectHost
+	}
+
+	return Extra{RedirectCode: redirectCode, RedirectHost: redirectHost}
 }
 
 func (h *RedirectHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
@@ -30,8 +55,15 @@ func (h *RedirectHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 	redirect, err := h.Client.Get("go-shortener:" + req.RequestURI).Result()
 	if redirect == "" || err != nil {
-		logEntry += " 404 " + req.RequestURI
-		http.NotFound(w, req)
+		e := getExtra(&h.Extra)
+
+		if e.RedirectHost != "" {
+			logEntry += " " + strconv.Itoa(e.RedirectCode) + " " + req.RequestURI + " " + e.RedirectHost
+			http.Redirect(w, req, e.RedirectHost, e.RedirectCode)
+		} else {
+			logEntry += " 404 " + req.RequestURI
+			http.NotFound(w, req)
+		}
 	} else {
 		logEntry += " 301 " + req.RequestURI + " " + redirect
 		h.Client.Incr("go-shortener-count:" + req.RequestURI)

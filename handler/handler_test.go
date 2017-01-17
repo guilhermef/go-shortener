@@ -66,7 +66,7 @@ func TestWhenURLExists(t *testing.T) {
 	}
 }
 
-func TestWhenURLDoesntExist(t *testing.T) {
+func TestWhenURLDoesntExistAndDoesntExistRedirectHost(t *testing.T) {
 	var buffer bytes.Buffer
 	logger := log.New(&buffer, "", 0)
 	client := getRedisClient()
@@ -91,7 +91,70 @@ func TestWhenURLDoesntExist(t *testing.T) {
 	if !strings.HasSuffix(buffer.String(), "404 /should-not-exist\n") {
 		t.Fatalf("Incorrect log entry: %s\n", buffer.String())
 	}
+}
 
+func TestWhenURLDoesntExistAndExistRedirectHost(t *testing.T) {
+	var buffer bytes.Buffer
+	logger := log.New(&buffer, "", 0)
+	client := getRedisClient()
+	extra := getExtra(&Extra{RedirectHost: "http://luke.wars"})
+
+	handler := &RedirectHandler{Client: client, Logger: logger, Extra: extra}
+	server := httptest.NewServer(handler)
+	defer server.Close()
+
+	req, err := http.NewRequest("GET", server.URL+"/should-not-exist", nil)
+	transport := http.Transport{}
+	resp, err := transport.RoundTrip(req)
+	defer resp.Body.Close()
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if resp.StatusCode != 302 {
+		t.Errorf("Received non-302 response: %d\n", resp.StatusCode)
+	}
+
+	if resp.Header.Get("Location") != "http://luke.wars" {
+		t.Errorf("Received wrong location: %s\n", resp.Header.Get("Location"))
+	}
+
+	if !strings.HasSuffix(buffer.String(), "302 /should-not-exist http://luke.wars\n") {
+		t.Fatalf("Incorrect log entry: %s\n", buffer.String())
+	}
+}
+
+func TestWhenURLDoesntExistAndExistRedirectHostAndExistRedirectCode(t *testing.T) {
+	var buffer bytes.Buffer
+	logger := log.New(&buffer, "", 0)
+	client := getRedisClient()
+	extra := getExtra(&Extra{RedirectHost: "http://luke.wars", RedirectCode: 200})
+
+	handler := &RedirectHandler{Client: client, Logger: logger, Extra: extra}
+	server := httptest.NewServer(handler)
+	defer server.Close()
+
+	req, err := http.NewRequest("GET", server.URL+"/should-not-exist", nil)
+	transport := http.Transport{}
+	resp, err := transport.RoundTrip(req)
+	defer resp.Body.Close()
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if resp.StatusCode != 200 {
+		t.Errorf("Received non-200 response: %d\n", resp.StatusCode)
+	}
+
+	if resp.Header.Get("Location") != "http://luke.wars" {
+		t.Errorf("Received wrong location: %s\n", resp.Header.Get("Location"))
+	}
+
+	if !strings.HasSuffix(buffer.String(), "200 /should-not-exist http://luke.wars\n") {
+		t.Fatalf("Incorrect log entry: %s\n", buffer.String())
+	}
 }
 
 func TestHealthCheck(t *testing.T) {
