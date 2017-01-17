@@ -1,12 +1,12 @@
 language: go
 
 go:
-  - 1.5
   - 1.6
+  - 1.7
   - tip
 
 before_install:
- - go get github.com/guilhermef/go-shortener
+ - go get github.com/edukorg/go-shortener
  - go get github.com/tools/godep
 
 install:
