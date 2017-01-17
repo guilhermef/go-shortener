@@ -84,11 +84,14 @@ func TestWhenURLDoesntExist(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if resp.StatusCode != 404 {
-		t.Errorf("Received non-404 response: %d\n", resp.StatusCode)
+	if resp.StatusCode != 301 {
+		t.Fatalf("Received non-301 response: %d\n", resp.StatusCode)
+	}
+	if resp.Header.Get("Location") != "http://www.eduk.com.br" {
+		t.Errorf("Received wrong location: %s\n", resp.Header.Get("Location"))
 	}
 
-	if !strings.HasSuffix(buffer.String(), "404 /should-not-exist\n") {
+	if !strings.HasSuffix(buffer.String(), "301 /should-not-exist http://www.eduk.com.br\n") {
 		t.Fatalf("Incorrect log entry: %s\n", buffer.String())
 	}
 
