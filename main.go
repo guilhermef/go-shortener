@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/guilhermef/go-shortener/config"
-	"github.com/guilhermef/go-shortener/handler"
+	"github.com/edukorg/go-shortener/config"
+	"github.com/edukorg/go-shortener/handler"
 	"log"
 	"net/http"
 )
