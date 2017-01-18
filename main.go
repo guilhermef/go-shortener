@@ -15,7 +15,7 @@ func main() {
 
 	address := "0.0.0.0:" + cfg.Port
 	log.Printf("Running on %s", address)
-	err = http.ListenAndServe(address, &handler.RedirectHandler{Client: cfg.RedisClient, Logger: cfg.Logger})
+	err = http.ListenAndServe(address, &handler.RedirectHandler{Client: cfg.RedisClient, Logger: cfg.Logger })
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}

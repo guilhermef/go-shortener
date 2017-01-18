@@ -45,6 +45,14 @@ redispass: pass
 redisdb: 0
 ```
 
+## Custom Redirect
+
+If the key on Redis database isn't found, that's possible to make a custom redirect instead of a simple response, like Not Found.
+To do this, set the following environment variable
+
+* `REDIRECT_HOST`: Host to redirect (Required, if wanna make a custom redirect)
+* `REDIRECT_CODE`: Response status code for that redirect. Default: 302
+
 ## Test
 
 Test by running `make test`.
